@@ -1,15 +1,31 @@
-const express = require('express'); // importing a CommonJS module
-
-const hubsRouter = require('./hubs/hubs-router.js');
+const express = require("express"); // importing a CommonJS module
+const helmet = require("helmet");
+const hubsRouter = require("./hubs/hubs-router.js");
 
 const server = express();
 
+function dateLogger(req, res, next) {
+  console.log(new Date().toISOString());
+  next();
+}
+
+function customLogger(req, res, next) {
+  const httpLoc = req.originalUrl;
+  const method = req.method;
+  console.log(`${httpLoc}${method}`);
+  next();
+}
+
+// global middleware
+server.use(helmet());
 server.use(express.json());
+server.use(dateLogger);
+server.use(customLogger);
 
-server.use('/api/hubs', hubsRouter);
+server.use("/api/hubs", hubsRouter);
 
-server.get('/', (req, res) => {
-  const nameInsert = (req.name) ? ` ${req.name}` : '';
+server.get("/", (req, res) => {
+  const nameInsert = req.name ? ` ${req.name}` : "";
 
   res.send(`
     <h2>Lambda Hubs API</h2>
